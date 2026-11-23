@@ -44,7 +44,8 @@ class _Ink {
       Theme.of(context).brightness == Brightness.dark ? dark : light;
 }
 
-const _javaneseFonts = ['Noto Serif Javanese', 'Noto Sans Javanese', 'Javanese Text'];
+// Bundled first so Aksara Jawa looks the same everywhere; system fonts are backups.
+const _javaneseFonts = ['NotoSansJavanese', 'Noto Serif Javanese', 'Noto Sans Javanese', 'Javanese Text'];
 
 TextStyle _text({
   required double size,
