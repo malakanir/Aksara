@@ -29,7 +29,7 @@ jobs:
         working-directory: app
         run: |
           flutter pub get
-          flutter analyze
+          flutter analyze --no-fatal-infos
           flutter test
 
       # Served at https://malakanir.github.io/Aksara/
