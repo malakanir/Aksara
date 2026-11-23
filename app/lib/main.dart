@@ -5,35 +5,89 @@ import 'aksara_converter.dart';
 
 void main() => runApp(const AksaraJawaApp());
 
+/// Palette: lontar palm-leaf paper, wedelan indigo ink, one kencana gold accent.
+class _Ink {
+  const _Ink({
+    required this.paper,
+    required this.band,
+    required this.ink,
+    required this.muted,
+    required this.rule,
+    required this.gold,
+  });
+
+  final Color paper;
+  final Color band;
+  final Color ink;
+  final Color muted;
+  final Color rule;
+  final Color gold;
+
+  static const light = _Ink(
+    paper: Color(0xFFECE5D3),
+    band: Color(0xFFE1D6BA),
+    ink: Color(0xFF1F2A44),
+    muted: Color(0xFF6B6456),
+    rule: Color(0xFFBDB39A),
+    gold: Color(0xFF8A6514),
+  );
+  static const dark = _Ink(
+    paper: Color(0xFF1B1D24),
+    band: Color(0xFF262A34),
+    ink: Color(0xFFE9E2CE),
+    muted: Color(0xFFA39C88),
+    rule: Color(0xFF4A4638),
+    gold: Color(0xFFD2AE5A),
+  );
+
+  static _Ink of(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? dark : light;
+}
+
+const _javaneseFonts = ['Noto Serif Javanese', 'Noto Sans Javanese', 'Javanese Text'];
+
+TextStyle _text({
+  required double size,
+  required Color color,
+  FontWeight weight = FontWeight.w400,
+  double height = 1.5,
+  FontStyle style = FontStyle.normal,
+}) =>
+    TextStyle(
+      fontFamily: 'Noto Serif',
+      fontFamilyFallback: ['Georgia', 'Times New Roman', ..._javaneseFonts],
+      fontSize: size,
+      color: color,
+      fontWeight: weight,
+      height: height,
+      fontStyle: style,
+    );
+
+ThemeData _theme(Brightness brightness) {
+  final c = brightness == Brightness.dark ? _Ink.dark : _Ink.light;
+  return ThemeData(
+    useMaterial3: true,
+    brightness: brightness,
+    colorScheme: ColorScheme.fromSeed(seedColor: c.gold, brightness: brightness, surface: c.paper),
+    scaffoldBackgroundColor: c.paper,
+  );
+}
+
 class AksaraJawaApp extends StatelessWidget {
   const AksaraJawaApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    const seed = Color(0xFF0F766E);
     return MaterialApp(
-      title: 'AksaraJawa',
+      title: 'Aksara Jawa',
       debugShowCheckedModeBanner: false,
       themeMode: ThemeMode.system,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: seed, brightness: Brightness.light),
-        scaffoldBackgroundColor: const Color(0xFFF5F3EF),
-      ),
-      darkTheme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: seed, brightness: Brightness.dark),
-      ),
+      theme: _theme(Brightness.light),
+      darkTheme: _theme(Brightness.dark),
       home: const ConverterPage(),
     );
   }
 }
-
-const _javaneseStyle = TextStyle(
-  fontSize: 26,
-  height: 1.7,
-  fontFamilyFallback: ['Noto Sans Javanese', 'Javanese Text'],
-);
 
 const _baseKeys = <(String, String)>[
   ('ꦲ', 'ha'), ('ꦤ', 'na'), ('ꦕ', 'ca'), ('ꦫ', 'ra'), ('ꦏ', 'ka'),
@@ -123,264 +177,189 @@ class _ConverterPageState extends State<ConverterPage> {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    final c = _Ink.of(context);
     final output = _output;
     final hasInput = _controller.text.isNotEmpty;
+    final reduceMotion = MediaQuery.disableAnimationsOf(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 34,
-              height: 34,
-              decoration: BoxDecoration(
-                color: scheme.primaryContainer,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                'ꦄ',
-                style: TextStyle(
-                  fontSize: 20,
-                  color: scheme.onPrimaryContainer,
-                  fontWeight: FontWeight.w700,
+      body: SafeArea(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 720),
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(24, 32, 24, 48),
+              children: [
+                Row(
+                  children: [
+                    Text('ꦄ', style: _text(size: 34, color: c.gold, weight: FontWeight.w600, height: 1.2)),
+                    const SizedBox(width: 12),
+                    Text('Aksara Jawa', style: _text(size: 28, color: c.ink, weight: FontWeight.w600)),
+                  ],
                 ),
-              ),
-            ),
-            const SizedBox(width: 10),
-            const Text('AksaraJawa'),
-          ],
-        ),
-        actions: [
-          IconButton(
-            tooltip: 'Ganti arah konversi',
-            onPressed: () => _setMode(!_toAksara),
-            icon: const Icon(Icons.swap_horiz_rounded),
-          ),
-          const SizedBox(width: 4),
-        ],
-        centerTitle: false,
-        backgroundColor: scheme.surface,
-        surfaceTintColor: Colors.transparent,
-        elevation: 0,
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Divider(height: 1, color: scheme.outlineVariant),
-        ),
-      ),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 1040),
-          child: ListView(
-            padding: const EdgeInsets.all(20),
-            children: [
-              Text(
-                'Konverter Latin ↔ Aksara Jawa',
-                style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Tulis, konversi, dan salin teks dengan keyboard aksara.',
-                style: textTheme.bodyMedium?.copyWith(color: scheme.outline),
-              ),
-              const SizedBox(height: 24),
-              Card(
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(color: scheme.outlineVariant),
+                const SizedBox(height: 8),
+                Text(
+                  'Tulis, konversi, dan salin teks dengan keyboard aksara.',
+                  style: _text(size: 16, color: c.muted, style: FontStyle.italic),
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
+                const SizedBox(height: 28),
+                _ModeTabs(toAksara: _toAksara, onChanged: _setMode),
+                const SizedBox(height: 20),
+                Text(_toAksara ? 'Teks Latin' : 'Aksara Jawa', style: _text(size: 14, color: c.muted)),
+                Semantics(
+                  label: _toAksara ? 'Input teks Latin' : 'Input Aksara Jawa',
+                  child: TextField(
+                    controller: _controller,
+                    minLines: 3,
+                    maxLines: 6,
+                    cursorColor: c.gold,
+                    style: _toAksara
+                        ? _text(size: 22, color: c.ink, height: 1.6)
+                        : _text(size: 30, color: c.ink, height: 1.7),
+                    onChanged: (_) => setState(() {}),
+                    decoration: InputDecoration(
+                      hintText: _toAksara
+                          ? 'Ketik teks Latin di sini...'
+                          : 'Ketik atau tempel Aksara Jawa di sini...',
+                      hintStyle: _text(size: 18, color: c.muted, style: FontStyle.italic),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                      border: UnderlineInputBorder(borderSide: BorderSide(color: c.rule)),
+                      enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: c.rule)),
+                      focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: c.gold, width: 2)),
+                    ),
+                  ),
+                ),
+                Row(
+                  children: [
+                    Text('${_controller.text.length} karakter', style: _text(size: 13, color: c.muted)),
+                    const Spacer(),
+                    if (hasInput)
+                      TextButton(
+                        onPressed: () => setState(_controller.clear),
+                        style: TextButton.styleFrom(foregroundColor: c.ink, textStyle: _text(size: 15, color: c.ink)),
+                        child: const Text('Hapus teks'),
+                      ),
+                  ],
+                ),
+                Wrap(
+                  spacing: 4,
+                  children: [
+                    for (final ex in _examples)
+                      TextButton(
+                        onPressed: () => _useExample(ex),
+                        style: TextButton.styleFrom(
+                          foregroundColor: c.ink,
+                          textStyle: _text(size: 15, color: c.ink, style: FontStyle.italic),
+                        ),
+                        child: Text(ex),
+                      ),
+                  ],
+                ),
+                if (_toAksara)
+                  CheckboxListTile(
+                    value: _murda,
+                    onChanged: (v) => setState(() => _murda = v ?? false),
+                    controlAffinity: ListTileControlAffinity.leading,
+                    contentPadding: EdgeInsets.zero,
+                    activeColor: c.ink,
+                    checkColor: c.paper,
+                    title: Text('Aksara murda untuk huruf kapital', style: _text(size: 15, color: c.ink)),
+                    subtitle: Text('Huruf kapital di awal kata', style: _text(size: 13, color: c.muted)),
+                  ),
+                const SizedBox(height: 32),
+                Container(
+                  constraints: const BoxConstraints(minHeight: 200),
+                  padding: const EdgeInsets.fromLTRB(20, 16, 12, 16),
+                  decoration: BoxDecoration(
+                    color: c.band,
+                    border: Border(top: BorderSide(color: c.gold, width: 2)),
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      SegmentedButton<bool>(
-                        showSelectedIcon: false,
-                        segments: const [
-                          ButtonSegment(value: true, label: Text('Latin → Aksara'), icon: Icon(Icons.arrow_forward)),
-                          ButtonSegment(value: false, label: Text('Aksara → Latin'), icon: Icon(Icons.arrow_back)),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              _toAksara ? 'Hasil Aksara Jawa' : 'Hasil Latin',
+                              style: _text(size: 14, color: c.muted),
+                            ),
+                          ),
+                          TextButton.icon(
+                            onPressed: output.isEmpty ? null : _copy,
+                            icon: const Icon(Icons.content_copy_rounded, size: 18),
+                            label: const Text('Salin'),
+                            style: TextButton.styleFrom(
+                              foregroundColor: c.ink,
+                              textStyle: _text(size: 15, color: c.ink, weight: FontWeight.w600),
+                            ),
+                          ),
                         ],
-                        selected: {_toAksara},
-                        onSelectionChanged: (s) => _setMode(s.first),
                       ),
-                      if (_toAksara) ...[
-                        const SizedBox(height: 8),
-                        SwitchListTile.adaptive(
-                          contentPadding: EdgeInsets.zero,
-                          title: const Text('Aksara Murda'),
-                          subtitle: const Text('Huruf kapital di awal kata'),
-                          value: _murda,
-                          onChanged: (v) => setState(() => _murda = v),
-                        ),
-                      ],
+                      const SizedBox(height: 8),
+                      AnimatedSwitcher(
+                        duration: reduceMotion ? Duration.zero : const Duration(milliseconds: 180),
+                        child: output.isEmpty
+                            ? Padding(
+                                key: const ValueKey('empty'),
+                                padding: const EdgeInsets.symmetric(vertical: 24),
+                                child: Text(
+                                  'Hasil akan muncul di sini. Ketik teks di atas untuk mulai.',
+                                  style: _text(size: 18, color: c.muted, style: FontStyle.italic),
+                                ),
+                              )
+                            : Padding(
+                                key: ValueKey(output),
+                                padding: const EdgeInsets.only(top: 8),
+                                child: SelectableText(
+                                  output,
+                                  style: _toAksara
+                                      ? _text(size: 40, color: c.ink, height: 1.7)
+                                      : _text(size: 22, color: c.ink),
+                                ),
+                              ),
+                      ),
                     ],
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  final wide = constraints.maxWidth >= 720;
-                  final inputPanel = _Panel(
-                    title: _toAksara ? 'Teks Latin' : 'Aksara Jawa',
-                    trailing: Text(
-                      '${_controller.text.length} karakter',
-                      style: textTheme.labelMedium?.copyWith(color: scheme.outline),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Semantics(
-                          label: _toAksara ? 'Input teks Latin' : 'Input Aksara Jawa',
-                          child: TextField(
-                            controller: _controller,
-                            minLines: 4,
-                            maxLines: 6,
-                            style: _toAksara ? null : _javaneseStyle,
-                            onChanged: (_) => setState(() {}),
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                borderSide: BorderSide(color: scheme.outlineVariant),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                borderSide: BorderSide(color: scheme.outlineVariant),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                borderSide: BorderSide(color: scheme.primary, width: 2),
-                              ),
-                              filled: true,
-                              fillColor: scheme.surfaceContainerLow,
-                              hintText: _toAksara
-                                  ? 'Ketik teks Latin di sini...'
-                                  : 'Ketik atau tempel Aksara Jawa di sini...',
-                              suffixIcon: hasInput
-                                  ? IconButton(
-                                      tooltip: 'Hapus teks',
-                                      icon: const Icon(Icons.clear),
-                                      onPressed: () => setState(_controller.clear),
-                                    )
-                                  : null,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: [
-                            for (final ex in _examples)
-                              ActionChip(
-                                label: Text(ex),
-                                onPressed: () => _useExample(ex),
-                              ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  );
-                  final outputPanel = _Panel(
-                    title: _toAksara ? 'Hasil Aksara Jawa' : 'Hasil Latin',
-                    trailing: FilledButton.tonalIcon(
-                      onPressed: output.isEmpty ? null : _copy,
-                      icon: const Icon(Icons.copy, size: 18),
-                      label: const Text('Salin'),
-                    ),
-                    child: Container(
-                      constraints: const BoxConstraints(minHeight: 132),
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: scheme.primary.withValues(alpha: 0.06),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: scheme.primary.withValues(alpha: 0.25)),
-                      ),
-                      alignment: Alignment.topLeft,
-                      child: AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 180),
-                        child: output.isEmpty
-                            ? Row(
-                                key: const ValueKey('empty'),
-                                children: [
-                                  Icon(Icons.translate_rounded, size: 20, color: scheme.outline),
-                                  const SizedBox(width: 10),
-                                  Flexible(
-                                    child: Text(
-                                      'Hasil akan muncul di sini. Ketik teks di atas untuk mulai.',
-                                      style: textTheme.bodyLarge?.copyWith(color: scheme.outline),
-                                    ),
-                                  ),
-                                ],
-                              )
-                            : SelectableText(
-                                output,
-                                key: ValueKey(output),
-                                style: _toAksara ? _javaneseStyle : const TextStyle(fontSize: 20),
-                              ),
-                      ),
-                    ),
-                  );
-
-                  if (wide) {
-                    return Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(child: inputPanel),
-                        const SizedBox(width: 16),
-                        Expanded(child: outputPanel),
-                      ],
-                    );
-                  }
-                  return Column(
-                    children: [
-                      inputPanel,
-                      const SizedBox(height: 16),
-                      outputPanel,
-                    ],
-                  );
-                },
-              ),
-              const SizedBox(height: 16),
-              OutlinedButton.icon(
-                onPressed: () => setState(() => _keyboard = !_keyboard),
-                icon: Icon(_keyboard ? Icons.keyboard_hide : Icons.keyboard),
-                label: Text(_keyboard ? 'Tutup Keyboard Aksara' : 'Buka Keyboard Aksara'),
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(48),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                const SizedBox(height: 24),
+                TextButton.icon(
+                  onPressed: () => setState(() => _keyboard = !_keyboard),
+                  icon: Icon(_keyboard ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down),
+                  label: Text(_keyboard ? 'Tutup keyboard aksara' : 'Buka keyboard aksara'),
+                  style: TextButton.styleFrom(foregroundColor: c.ink, textStyle: _text(size: 15, color: c.ink)),
                 ),
-              ),
-              AnimatedSize(
-                duration: const Duration(milliseconds: 200),
-                curve: Curves.easeOut,
-                child: _keyboard
-                    ? Padding(
-                        padding: const EdgeInsets.only(top: 16),
-                        child: _Panel(
-                          title: 'Keyboard Aksara',
-                          trailing: TextButton.icon(
-                            onPressed: _backspace,
-                            icon: const Icon(Icons.backspace_outlined),
-                            label: const Text('Hapus'),
-                          ),
+                AnimatedSize(
+                  duration: reduceMotion ? Duration.zero : const Duration(milliseconds: 200),
+                  curve: Curves.easeOut,
+                  alignment: Alignment.topCenter,
+                  child: _keyboard
+                      ? Padding(
+                          padding: const EdgeInsets.only(top: 12),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: TextButton.icon(
+                                  onPressed: _backspace,
+                                  icon: const Icon(Icons.backspace_outlined, size: 18),
+                                  label: const Text('Hapus'),
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: c.ink,
+                                    textStyle: _text(size: 15, color: c.ink),
+                                  ),
+                                ),
+                              ),
                               _KeyGrid(keys: _baseKeys, onTap: _insert),
-                              const SizedBox(height: 12),
                               _KeyGrid(keys: _signKeys, onTap: _insert, withBase: true),
                             ],
                           ),
-                        ),
-                      )
-                    : const SizedBox.shrink(),
-              ),
-            ],
+                        )
+                      : const SizedBox.shrink(),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -388,46 +367,75 @@ class _ConverterPageState extends State<ConverterPage> {
   }
 }
 
-class _Panel extends StatelessWidget {
-  const _Panel({required this.title, required this.child, this.trailing});
+/// Latin / Aksara direction as two underlined tabs sitting on a ruled line.
+class _ModeTabs extends StatelessWidget {
+  const _ModeTabs({required this.toAksara, required this.onChanged});
 
-  final String title;
-  final Widget child;
-  final Widget? trailing;
+  final bool toAksara;
+  final ValueChanged<bool> onChanged;
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
+    final c = _Ink.of(context);
+    return Container(
+      decoration: BoxDecoration(border: Border(bottom: BorderSide(color: c.rule))),
+      child: Row(
+        children: [
+          _ModeTab(label: 'Latin → Aksara', selected: toAksara, ink: c.ink, gold: c.gold, muted: c.muted, onTap: () => onChanged(true)),
+          const SizedBox(width: 24),
+          _ModeTab(label: 'Aksara → Latin', selected: !toAksara, ink: c.ink, gold: c.gold, muted: c.muted, onTap: () => onChanged(false)),
+        ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
+    );
+  }
+}
+
+class _ModeTab extends StatelessWidget {
+  const _ModeTab({
+    required this.label,
+    required this.selected,
+    required this.ink,
+    required this.gold,
+    required this.muted,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final Color ink;
+  final Color gold;
+  final Color muted;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final reduceMotion = MediaQuery.disableAnimationsOf(context);
+    return Semantics(
+      button: true,
+      selected: selected,
+      child: InkWell(
+        onTap: onTap,
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    title,
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium
-                        ?.copyWith(fontWeight: FontWeight.w700),
-                    overflow: TextOverflow.ellipsis,
-                  ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(0, 10, 0, 8),
+              child: Text(
+                label,
+                style: _text(
+                  size: 16,
+                  color: selected ? ink : muted,
+                  weight: selected ? FontWeight.w600 : FontWeight.w400,
                 ),
-                if (trailing != null) ...[
-                  const SizedBox(width: 8),
-                  trailing!,
-                ],
-              ],
+              ),
             ),
-            const SizedBox(height: 12),
-            child,
+            AnimatedContainer(
+              duration: reduceMotion ? Duration.zero : const Duration(milliseconds: 180),
+              height: 2,
+              width: 40,
+              color: selected ? gold : Colors.transparent,
+            ),
           ],
         ),
       ),
@@ -444,45 +452,50 @@ class _KeyGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+    final c = _Ink.of(context);
     return LayoutBuilder(
       builder: (context, constraints) {
-        const gap = 6.0;
-        final perRow = ((constraints.maxWidth + gap) / 78).floor().clamp(5, 10);
-        final keyWidth = (constraints.maxWidth - gap * (perRow - 1)) / perRow;
-        return Wrap(
-          spacing: gap,
-          runSpacing: gap,
-          children: [
-            for (final (char, label) in keys)
-              SizedBox(
-                width: keyWidth,
-                child: OutlinedButton(
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 6),
-                    minimumSize: const Size(0, 58),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    side: BorderSide(color: scheme.outlineVariant),
-                  ),
-                  onPressed: () => onTap(char),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        withBase ? 'ꦲ$char' : char,
-                        style: _javaneseStyle.copyWith(fontSize: 20, height: 1.3),
+        // One pixel is reserved for the grid's left border.
+        final inner = constraints.maxWidth - 1;
+        final perRow = (inner / 72).floor().clamp(5, 10);
+        final cellWidth = inner / perRow;
+        return Container(
+          decoration: BoxDecoration(
+            border: Border(top: BorderSide(color: c.rule), left: BorderSide(color: c.rule)),
+          ),
+          child: Wrap(
+            children: [
+              for (final (char, label) in keys)
+                Semantics(
+                  button: true,
+                  label: label,
+                  child: InkWell(
+                    onTap: () => onTap(char),
+                    child: Container(
+                      width: cellWidth,
+                      height: 68,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        border: Border(
+                          right: BorderSide(color: c.rule),
+                          bottom: BorderSide(color: c.rule),
+                        ),
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        label,
-                        style: TextStyle(fontSize: 10, color: scheme.outline),
-                        overflow: TextOverflow.ellipsis,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            withBase ? 'ꦲ$char' : char,
+                            style: _text(size: 24, color: c.ink, height: 1.3),
+                          ),
+                          Text(label, style: _text(size: 11, color: c.muted)),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
-          ],
+            ],
+          ),
         );
       },
     );
