@@ -32,10 +32,10 @@ jobs:
           flutter analyze --no-fatal-infos
           flutter test
 
-      # Served at https://malakanir.github.io/Aksara/
+      # Served at https://aksarajawa.malakanir.my.id/ (custom domain, root path)
       - name: Build web
         working-directory: app
-        run: flutter build web --release --base-href /Aksara/
+        run: flutter build web --release --base-href /
 
       - uses: actions/upload-pages-artifact@v3
         with:
